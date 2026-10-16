@@ -5,11 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shinigami Uno Game</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-color: #07090e;
+            --card-bg: #111827;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --accent-glow: rgba(56, 189, 248, 0.2);
+        }
         body {
-            background-color: #0b0f19;
+            background: radial-gradient(circle at center, #111827 0%, #07090e 100%);
             color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Outfit', sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
@@ -20,62 +27,77 @@
         }
         .container {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             padding: 20px;
             box-sizing: border-box;
             text-align: center;
         }
         /* Lobby Screen */
         #lobby-screen {
-            background: #131b2e;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            border: 1px solid #1e293b;
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(16px);
+            padding: 35px 25px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
         }
         h2 {
-            margin-bottom: 5px;
+            margin: 0 0 5px 0;
             color: #38bdf8;
-            letter-spacing: 1px;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
         }
         .subtitle {
-            font-size: 12px;
+            font-size: 11px;
             color: #64748b;
-            margin-bottom: 25px;
-            letter-spacing: 2px;
+            margin-bottom: 30px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
         }
         .label {
             text-align: left;
             font-size: 11px;
             color: #94a3b8;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 1px;
         }
         input {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            background: #0b0f19;
-            border: 1px solid #334155;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            background: rgba(7, 9, 14, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: #fff;
-            border-radius: 8px;
+            border-radius: 12px;
             box-sizing: border-box;
-            font-size: 14px;
+            font-size: 15px;
             outline: none;
+            transition: all 0.3s ease;
+        }
+        input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 15px var(--accent-glow);
         }
         button {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             border: none;
-            border-radius: 8px;
-            font-weight: bold;
+            border-radius: 12px;
+            font-weight: 700;
             cursor: pointer;
-            font-size: 14px;
-            transition: opacity 0.2s;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            transition: transform 0.2s, opacity 0.2s;
         }
-        button:hover { opacity: 0.9; }
-        .btn-create { background: #10b981; color: white; margin-bottom: 15px; }
-        .btn-join { background: #6366f1; color: white; }
+        button:active { transform: scale(0.97); }
+        .btn-create { 
+            background: linear-gradient(135deg, #10b981, #059669); 
+            color: white; 
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+        }
 
         /* Game Screen */
         #game-screen {
@@ -84,60 +106,78 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 15px;
+            padding: 20px 15px;
             box-sizing: border-box;
         }
         .game-header {
             display: flex;
             justify-content: space-between;
-            background: #131b2e;
-            padding: 10px 15px;
-            border-radius: 10px;
-            border: 1px solid #1e293b;
+            align-items: center;
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 12px 18px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
             font-size: 13px;
+            font-weight: 600;
         }
         .game-board {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
             margin: auto 0;
         }
+        
+        /* Premium Uno Cards */
         .uno-card {
-            width: 70px;
-            height: 100px;
-            border-radius: 10px;
+            width: 75px;
+            height: 110px;
+            border-radius: 12px;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-size: 28px;
+            font-weight: 800;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5), inset 0 2px 3px rgba(255,255,255,0.3);
             cursor: pointer;
             user-select: none;
-            transition: transform 0.2s;
+            position: relative;
+            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .uno-card:hover { transform: translateY(-5px); }
-        .card-red { background: #ef4444; color: white; border: 2px solid #f87171; }
-        .card-blue { background: #3b82f6; color: white; border: 2px solid #60a5fa; }
-        .card-green { background: #10b981; color: white; border: 2px solid #34d399; }
-        .card-yellow { background: #f59e0b; color: white; border: 2px solid #fbbf24; }
-        .card-back { background: #1e293b; color: #94a3b8; border: 2px dashed #475569; }
+        .uno-card:hover { transform: translateY(-8px) scale(1.05); }
+        
+        .card-red { background: linear-gradient(135deg, #f87171, #dc2626); color: white; border: 2px solid rgba(255,255,255,0.2); }
+        .card-blue { background: linear-gradient(135deg, #60a5fa, #2563eb); color: white; border: 2px solid rgba(255,255,255,0.2); }
+        .card-green { background: linear-gradient(135deg, #34d399, #059669); color: white; border: 2px solid rgba(255,255,255,0.2); }
+        .card-yellow { background: linear-gradient(135deg, #fbbf24, #d97706); color: white; border: 2px solid rgba(255,255,255,0.2); }
+        .card-back { background: linear-gradient(135deg, #334155, #1e293b); color: #94a3b8; border: 2px dashed rgba(255,255,255,0.2); }
 
+        .player-hand-container {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
         .player-hand {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             overflow-x: auto;
-            padding: 10px;
-            background: #131b2e;
-            border-radius: 12px;
-            border: 1px solid #1e293b;
-            justify-content: center;
+            padding: 5px;
+            justify-content: flex-start;
+            scrollbar-width: none;
         }
+        .player-hand::-webkit-scrollbar { display: none; }
+        
         .status-text {
             font-size: 13px;
             color: #38bdf8;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
         }
     </style>
 </head>
@@ -147,40 +187,42 @@
     <div id="lobby-container" class="container">
         <div id="lobby-screen">
             <h2>SHINIGAMI</h2>
-            <div class="subtitle">UNO LOBBY</div>
+            <div class="subtitle">UNO ARENA</div>
 
             <div class="label">PLAYER NAME</div>
             <input type="text" id="playerName" placeholder="Enter name...">
 
-            <button class="btn-create" onclick="startGame()">🎮 Start Uno Game</button>
+            <button class="btn-create" onclick="startGame()">⚡ Start Game</button>
         </div>
     </div>
 
     <!-- 2. GAME SCREEN -->
     <div id="game-screen" class="container" style="display: none;">
         <div class="game-header">
-            <span id="room-info">Room: #UNO-99</span>
-            <span id="player-score">Cards: 5</span>
+            <span id="room-info" style="color: #38bdf8;">🎴 Room #UNO</span>
+            <span id="player-score" style="background: rgba(56,189,248,0.1); padding: 4px 10px; border-radius: 8px; color: #38bdf8;">Cards: 5</span>
         </div>
 
         <div>
-            <div class="status-text" id="game-status">သင်၏အလှည့် (Your Turn)</div>
+            <div class="status-text" id="game-status">✨ သင်၏အလှည့် (Your Turn)</div>
             <div class="game-board">
-                <div class="uno-card card-back" onclick="drawCard()">📦<br><span style="font-size:10px">Draw</span></div>
+                <div class="uno-card card-back" onclick="drawCard()">
+                    <span style="font-size: 20px;">📦</span>
+                    <span style="font-size: 9px; margin-top: 4px; letter-spacing: 1px;">DRAW</span>
+                </div>
                 <div id="center-card" class="uno-card card-red">7</div>
             </div>
         </div>
 
-        <div>
-            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 5px; text-align: left;">YOUR HAND CARDS</div>
+        <div class="player-hand-container">
+            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px; text-align: left; font-weight: 600; letter-spacing: 1px;">YOUR CARDS</div>
             <div class="player-hand" id="playerHand">
-                <!-- Cards will be injected here -->
+                <!-- Cards injected dynamically -->
             </div>
         </div>
     </div>
 
     <script>
-        // Telegram WebApp init
         window.onload = function() {
             if (window.Telegram && window.Telegram.WebApp) {
                 const tg = window.Telegram.WebApp;
@@ -194,7 +236,7 @@
         let handCards = [
             {color: 'red', value: '3'},
             {color: 'blue', value: '5'},
-            {color: 'green', value: 'Skip'},
+            {color: 'green', value: '⚡'},
             {color: 'yellow', value: '9'},
             {color: 'red', value: '+2'}
         ];
@@ -207,7 +249,6 @@
                 alert("ကျေးဇူးပြု၍ နာမည်ထည့်ပါ။");
                 return;
             }
-            // Switch screens
             document.getElementById('lobby-container').style.display = 'none';
             document.getElementById('game-screen').style.display = 'flex';
             renderHand();
@@ -235,19 +276,18 @@
 
         function playCard(index) {
             const card = handCards[index];
-            // Simple validation: match color or value
-            if (card.color === centerCard.color || card.value === centerCard.value || card.value === 'Wild') {
+            if (card.color === centerCard.color || card.value === centerCard.value || card.value === '⚡') {
                 centerCard = card;
                 handCards.splice(index, 1);
                 updateCenterCard();
                 renderHand();
                 
                 if (handCards.length === 0) {
-                    document.getElementById('game-status').innerText = "🎉 ဂိမ်းနိုင်သွားပါပြီ! (You Won!)";
+                    document.getElementById('game-status').innerText = "🎉 ဂိမ်းအောင်မြင်စွာ နိုင်သွားပါပြီ!";
                 } else {
-                    document.getElementById('game-status').innerText = "✅ ကတ်ချလိုက်ပါပြီ။ Bot အလှည့်...";
+                    document.getElementById('game-status').innerText = "🔥 ကတ်ချလိုက်ပါပြီ ဆက်ကစားပါ...";
                     setTimeout(() => {
-                        document.getElementById('game-status').innerText = "သင်၏အလှည့် (Your Turn)";
+                        document.getElementById('game-status').innerText = "✨ သင်၏အလှည့် (Your Turn)";
                     }, 1000);
                 }
             } else {
@@ -257,7 +297,7 @@
 
         function drawCard() {
             const colors = ['red', 'blue', 'green', 'yellow'];
-            const values = ['1', '2', '3', '4', '6', '8'];
+            const values = ['1', '2', '4', '6', '8'];
             const randomColor = colors[Math.floor(Math.random() * colors.length)];
             const randomVal = values[Math.floor(Math.random() * values.length)];
             
