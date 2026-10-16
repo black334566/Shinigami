@@ -1,581 +1,145 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="my">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNO - Telegram Game</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-dark: #0f172a;
-            --glass-bg: rgba(15, 23, 42, 0.85);
-            --green-theme: #15803d;
-            --green-glow: rgba(34, 197, 94, 0.4);
-        }
-        body {
-            background: linear-gradient(135deg, #14532d 0%, #166534 50%, #052e16 100%);
-            color: #ffffff;
-            font-family: 'Outfit', sans-serif;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        body::before {
-            content: "";
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
-            background-size: 24px 24px;
-            pointer-events: none;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 420px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 15px;
-            box-sizing: border-box;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* --- LOBBY SCREEN --- */
-        #lobby-screen {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #14532d 0%, #052e16 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            padding: 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
-        .lobby-card {
-            background: rgba(18, 24, 38, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 25px 20px;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 360px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-        }
-        .lobby-title {
-            font-size: 32px;
-            font-weight: 800;
-            color: #ffffff;
-            margin: 0;
-            letter-spacing: 2px;
-        }
-        .lobby-subtitle {
-            font-size: 11px;
-            color: #94a3b8;
-            letter-spacing: 3px;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-        }
-        .input-group {
-            text-align: left;
-            margin-bottom: 12px;
-        }
-        .input-label {
-            font-size: 10px;
-            font-weight: 700;
-            color: #94a3b8;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-            display: block;
-        }
-        .styled-input {
-            width: 100%;
-            padding: 10px 14px;
-            background: #0b0f19;
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #fff;
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-size: 14px;
-            outline: none;
-            font-family: 'Outfit', sans-serif;
-        }
-        .styled-input:focus { border-color: #22c55e; }
-        
-        /* Bot Selector Options */
-        .bot-select-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-        .bot-btn-opt {
-            flex: 1;
-            padding: 8px;
-            background: #0b0f19;
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #94a3b8;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .bot-btn-opt.active {
-            background: #15803d;
-            border-color: #22c55e;
-            color: #fff;
-            box-shadow: 0 0 10px rgba(34,197,94,0.3);
-        }
-
-        .btn-create {
-            width: 100%;
-            padding: 12px;
-            background: #10b981;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 15px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-            margin-bottom: 12px;
-        }
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            color: #64748b;
-            font-size: 10px;
-            margin: 12px 0;
-            letter-spacing: 2px;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .divider::before { margin-right: 10px; }
-        .divider::after { margin-left: 10px; }
-
-        .join-row {
-            display: flex;
-            gap: 10px;
-        }
-        .btn-join {
-            padding: 12px 20px;
-            background: #6366f1;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        /* --- GAME SCREEN --- */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            background: rgba(0,0,0,0.3);
-            padding: 8px 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .top-badge {
-            background: rgba(255,255,255,0.1);
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-weight: 600;
-        }
-
-        /* Bots Header */
-        .bots-container {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin-top: 8px;
-            min-height: 60px;
-        }
-        .bot-profile {
-            text-align: center;
-            transition: opacity 0.3s;
-        }
-        .bot-profile.hidden {
-            display: none;
-        }
-        .bot-avatar {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            border: 2px solid #f59e0b;
-            background: #1e293b;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 10px;
-            font-weight: bold;
-            position: relative;
-            margin: 0 auto 4px auto;
-        }
-        .bot-cards-badge {
-            position: absolute;
-            bottom: -2px;
-            right: -2px;
-            background: #0f172a;
-            border: 1px solid #64748b;
-            font-size: 9px;
-            padding: 1px 4px;
-            border-radius: 8px;
-        }
-        .bot-name {
-            font-size: 10px;
-            color: #cbd5e1;
-        }
-
-        /* Center Board & Stacked Cards */
-        .center-board {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: auto 0;
-            position: relative;
-        }
-        .color-indicator {
-            background: rgba(0,0,0,0.6);
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 10px;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .color-dot {
-            width: 8px;
-            height: 8px;
-            background: #ef4444;
-            border-radius: 50%;
-        }
-
-        .cards-pile {
-            display: flex;
-            gap: 15px;
-            position: relative;
-            cursor: pointer;
-        }
-        .uno-card {
-            width: 65px;
-            height: 95px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 26px;
-            font-weight: 800;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-            cursor: pointer;
-            user-select: none;
-            position: relative;
-            transition: transform 0.2s;
-        }
-        .uno-card:hover { transform: translateY(-5px); }
-        .card-red { background: linear-gradient(135deg, #ef4444, #991b1b); color: white; border: 2px solid #f87171; }
-        .card-blue { background: linear-gradient(135deg, #3b82f6, #1e40af); color: white; border: 2px solid #60a5fa; }
-        .card-green { background: linear-gradient(135deg, #10b981, #065f46); color: white; border: 2px solid #34d399; }
-        .card-yellow { background: linear-gradient(135deg, #f59e0b, #b45309); color: white; border: 2px solid #fbbf24; }
-        .card-back { background: #1e293b; color: #cbd5e1; border: 2px dashed #475569; font-size: 12px; text-align: center; }
-
-        .action-buttons-right {
-            position: absolute;
-            right: -10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .btn-action-small {
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 9px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        .btn-chat {
-            background: #1e293b;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* Player Bottom Section */
-        .player-footer {
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 12px;
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .player-info-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 11px;
-        }
-        .player-hand {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-            scrollbar-width: none;
-        }
-        .player-hand::-webkit-scrollbar { display: none; }
-
-        /* --- ROOM CHAT MODAL --- */
-        #chat-modal {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(8px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 50;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .chat-card {
-            background: #111827;
-            border: 1px solid rgba(255,255,255,0.1);
-            width: 100%;
-            max-width: 340px;
-            border-radius: 16px;
-            padding: 15px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
-        }
-        .chat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 8px;
-        }
-        .chat-messages {
-            height: 110px;
-            background: #0b0f19;
-            border-radius: 8px;
-            padding: 8px;
-            font-size: 11px;
-            color: #cbd5e1;
-            overflow-y: auto;
-            margin-bottom: 10px;
-            text-align: left;
-        }
-        .chat-input-row {
-            display: flex;
-            gap: 8px;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#061710">
+<title>UNO Arena Online</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<style>
+:root{--g:#16e0a0;--bg:#061710;--panel:#0b2118;--gold:#ffcf69}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;color:#fff;font-family:system-ui,sans-serif;background:radial-gradient(ellipse at 50% 40%,#176a45,transparent 58%),linear-gradient(145deg,#061b14,#092e20 55%,#03110c)}
+button,input{font:inherit}button{cursor:pointer;color:white}.app{max-width:500px;margin:auto;min-height:100dvh;padding:12px;display:flex;flex-direction:column;gap:13px}
+.top,.panel{border:1px solid #ffffff1b;border-radius:18px;background:linear-gradient(135deg,#ffffff12,#ffffff05);backdrop-filter:blur(12px);padding:13px}
+.top{display:flex;justify-content:space-between;align-items:center}.brand{font-weight:950;letter-spacing:2px;font-size:20px}.brand span{color:var(--g)}.muted{font-size:11px;color:#a9c9b8}.pill{padding:7px 10px;border:1px solid #ffffff20;border-radius:11px;background:#ffffff0a;font-size:11px}
+.section{text-align:center;font-size:10px;letter-spacing:3px;font-weight:900;color:#a9cbbb}
+.players{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.player{padding:9px 3px;text-align:center;border:1px solid #ffffff16;border-radius:15px;background:#ffffff08;min-width:0}.player.me{border-color:var(--gold);box-shadow:0 0 15px #ffcf6920}.avatar{font-size:22px;margin-bottom:5px}.pname{font-size:10px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pcount{font-size:9px;color:#a9c9b8;margin-top:4px}.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--g);margin-right:4px}
+.table{border-radius:44% / 32%;border:2px solid #b8f5c42b;min-height:230px;padding:18px 10px;background:radial-gradient(ellipse,#218653,#11613d 55%,#0a3926);box-shadow:inset 0 0 35px #001d12a8,0 12px 35px #0004;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.turn{font-size:10px;font-weight:850;letter-spacing:1px;margin-bottom:17px;background:#05291ddd;border:1px solid #ffffff1b;border-radius:30px;padding:7px 12px}.piles{display:flex;gap:25px;align-items:center}.card{width:65px;height:94px;border:3px solid #fff9;border-radius:11px;display:grid;place-items:center;position:relative;font-size:27px;font-weight:950;text-shadow:0 2px 4px #0006;box-shadow:0 9px 15px #0005,inset 0 0 0 2px #ffffff22;flex-shrink:0}.card:before{content:"";position:absolute;inset:7px 10px;border:2px solid #ffffffb8;border-radius:50%;transform:rotate(-28deg)}.red{background:linear-gradient(145deg,#ff6767,#d20e36 70%,#870d25)}.blue{background:linear-gradient(145deg,#60baff,#1556df 70%,#102c86)}.green{background:linear-gradient(145deg,#5ff5a7,#07945b 70%,#075335)}.yellow{background:linear-gradient(145deg,#ffe988,#f7b90c 70%,#b87500)}.wild{background:conic-gradient(#e93651 0 25%,#eebd2c 25% 50%,#15b977 50% 75%,#347af4 75%)}.back{background:repeating-linear-gradient(45deg,#122f29,#122f29 7px,#1c5540 7px,#1c5540 14px);border-color:#e8d7a4}.activecolor{display:flex;align-items:center;gap:7px;margin-top:16px;font-size:10px;color:#c1e8d4}.color-dot{width:10px;height:10px;border-radius:50%}.actions{display:flex;gap:8px;margin-top:16px}.btn{border:1px solid #ffffff20;border-radius:12px;padding:10px 12px;background:#062b1e;font-size:11px;font-weight:850}.primary{background:linear-gradient(135deg,#20e7a5,#079969);border-color:#7bffcc;color:#032b1b}.btn:disabled{opacity:.4;cursor:not-allowed}.hand{display:flex;gap:7px;overflow-x:auto;align-items:flex-end;padding:15px 2px 8px;min-height:110px}.hand .card{width:54px;height:81px;font-size:22px;cursor:pointer}.hand .card:before{inset:6px 8px}.hand .card.playable{transform:translateY(-9px);border-color:#fff}.hand .card.disabled{filter:brightness(.55);cursor:not-allowed}.input{width:100%;padding:12px;border:1px solid #ffffff20;border-radius:11px;background:#06150f;color:#fff;margin:5px 0 10px;outline:none}.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}.hidden{display:none!important}.notice{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#0a2118;border:1px solid #3c8966;padding:12px 16px;border-radius:13px;font-size:12px;z-index:50;max-width:90%;text-align:center}.chatlog{height:130px;overflow:auto;background:#04130d;border-radius:10px;padding:8px;font-size:11px;line-height:1.7;margin-bottom:8px;overflow-wrap:anywhere}.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:20px;z-index:40}.modal.show{display:flex}.box{width:100%;max-width:350px;border-radius:20px;padding:18px;background:#0b2118;border:1px solid #ffffff25}.box h2{margin:0 0 14px}.colors{display:flex;justify-content:center;gap:12px;margin-top:18px}.color-choice{width:48px;height:48px;border:2px solid #ffffffaa;border-radius:50%}
+@media(max-height:700px){.table{min-height:190px}.app{gap:9px}.hand{min-height:95px}}
+</style>
 </head>
 <body>
+<div class="app">
+<header class="top"><div><div class="brand">UNO <span>ARENA</span></div><div class="muted" id="roomLabel">REAL-TIME MULTIPLAYER</div></div><div class="row" style="align-items:center"><button class="pill" id="shareBtn">↗ SHARE</button><button class="pill" id="chatBtn">CHAT</button></div></header>
+<section id="lobby" class="panel">
+  <div class="section">CREATE OR JOIN ROOM</div>
+  <p class="muted">ကစားသမား ၄ ယောက်ပြည့်မှ Host က ဂိမ်းစနိုင်ပါတယ်။</p>
+  <button class="btn primary" style="width:100%;padding:13px" id="createBtn">＋ CREATE ROOM</button>
+  <div class="muted" style="text-align:center;margin:14px">— OR JOIN WITH CODE —</div>
+  <input id="codeInput" class="input" maxlength="6" placeholder="ROOM CODE (ဥပမာ A7K9Q2)">
+  <button class="btn" style="width:100%" id="joinBtn">JOIN ROOM →</button>
+  <div id="devHelp" class="muted" style="margin-top:12px"></div>
+</section>
+<section id="roomPanel" class="panel hidden">
+  <div class="row" style="align-items:center"><div style="flex:2"><div class="muted">ROOM CODE</div><div id="roomCode" style="font-size:25px;font-weight:950;letter-spacing:3px">------</div></div><button class="btn" id="copyBtn">COPY CODE</button></div>
+  <div class="players" id="players" style="margin-top:14px"></div>
+  <div class="row" style="margin-top:12px"><button class="btn primary" id="startBtn">START GAME</button><button class="btn" id="leaveBtn">LEAVE ROOM</button></div>
+  <div id="roomMessage" class="muted" style="margin-top:10px">ကစားသမား ၄ ယောက်ကို စောင့်နေပါတယ်။</div>
+</section>
+<section id="gamePanel" class="panel hidden">
+  <div class="table">
+    <div class="turn" id="turnLabel">CONNECTING…</div>
+    <div class="piles"><div class="card back">UNO</div><div id="topCard" class="card red">7</div></div>
+    <div class="activecolor">ACTIVE COLOR <span id="colorDot" class="color-dot" style="background:#ff4545"></span><span id="colorText">RED</span></div>
+    <div class="actions"><button class="btn primary" id="drawBtn">＋ DRAW CARD</button></div>
+  </div>
+  <div class="row" style="align-items:center;margin-top:12px"><div style="font-weight:850">YOUR HAND</div><div id="handCount" class="muted" style="text-align:right">0 cards</div></div>
+  <div id="hand" class="hand"></div>
+  <div id="gameMessage" class="muted"></div>
+</section>
+<section id="chatPanel" class="panel hidden">
+  <div class="section">ROOM CHAT</div><div id="chatlog" class="chatlog"></div>
+  <div class="row"><input id="chatInput" class="input" maxlength="180" placeholder="Message..." style="margin:0"><button class="btn primary" id="sendChat">SEND</button></div>
+</section>
+</div>
+<div class="modal" id="colorModal"><div class="box"><h2>Choose a color</h2><div class="muted">Wild ကတ်အတွက် အရောင်ရွေးပါ။</div><div class="colors"><button class="color-choice red" data-color="red"></button><button class="color-choice blue" data-color="blue"></button><button class="color-choice green" data-color="green"></button><button class="color-choice yellow" data-color="yellow"></button></div></div></div>
+<div id="notice" class="notice hidden"></div>
+<script>
+const tg = window.Telegram?.WebApp;
+tg?.ready(); tg?.expand();
+const $ = id => document.getElementById(id);
+let socket, state=null, pendingCard=null, noticeTimer;
+const COLORS={red:"#ff4545",blue:"#347af4",green:"#15b977",yellow:"#eebd2c"};
+function notify(msg){$("notice").textContent=msg;$("notice").classList.remove("hidden");clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$("notice").classList.add("hidden"),2800)}
+function setVisible(id,on){$(id).classList.toggle("hidden",!on)}
+function connect(){
+  const initData=tg?.initData || "";
+  let auth={initData};
+  // Local development only: run server with DEV_ALLOW_NO_TG=true and use a unique name.
+  if(!initData && location.hostname==="localhost"){
+    let devName=prompt("Local test player name?","Player")||"Player";
+    auth.devName=devName; auth.devId=devName.toLowerCase().replace(/[^a-z0-9_-]/g,"").slice(0,30)+"_"+Math.random().toString(36).slice(2,7);
+  }
+  socket=io({auth,reconnection:true,reconnectionAttempts:Infinity,reconnectionDelay:1000,reconnectionDelayMax:10000});
+  socket.on("connect",()=>{
+    notify("Server ချိတ်ဆက်ပြီးပါပြီ။");
+    const saved=localStorage.getItem("unoRoom");
+    if(saved) socket.emit("room:join",saved);
+  });
+  socket.on("connect_error",e=>notify(e.message||"Connection error"));
+  socket.on("room:joined",({code})=>{localStorage.setItem("unoRoom",code);$("roomCode").textContent=code;setVisible("lobby",false);setVisible("roomPanel",true);$("roomLabel").textContent="ROOM #"+code;});
+  socket.on("game:state",s=>{state=s;render();});
+  socket.on("game:error",notify);
+  socket.on("chat:message",m=>{const d=document.createElement("div");d.textContent=`${m.name}: ${m.text}`;$("chatlog").appendChild(d);$("chatlog").scrollTop=$("chatlog").scrollHeight;});
+  socket.on("disconnect",()=>notify("လိုင်းပြတ်သွားပါပြီ။ ပြန်ချိတ်ဆက်နေပါတယ်…"));
+}
+function render(){
+  if(!state)return;
+  $("roomCode").textContent=state.code;$("roomLabel").textContent="ROOM #"+state.code;
+  setVisible("lobby",false);setVisible("roomPanel",true);
+  $("roomMessage").textContent=state.message||"";
+  $("players").replaceChildren();
+  const icons=["🤖","🦊","👾","🐼"];
+  state.players.forEach((p,i)=>{
+    const el=document.createElement("div");el.className="player"+(p.isMe?" me":"");
+    const av=document.createElement("div");av.className="avatar";av.textContent=icons[i%icons.length];
+    const name=document.createElement("div");name.className="pname";name.textContent=(p.connected?"● ":"○ ")+p.name;
+    const count=document.createElement("div");count.className="pcount";count.textContent=p.isMe?`${p.count} cards (you)`:`${p.count} cards`;
+    el.append(av,name,count);$("players").append(el);
+  });
+  $("startBtn").disabled=state.hostId!==myUserId()||state.players.length!==4||state.status!=="waiting";
+  $("startBtn").textContent=state.status==="waiting"?"START GAME":state.status==="finished"?"GAME FINISHED":"GAME IN PROGRESS";
+  const playing=state.status==="playing"||state.status==="finished";
+  setVisible("gamePanel",playing);
+  if(!playing)return;
+  const top=state.topCard||{color:"red",value:"?"};
+  $("topCard").className="card "+top.color;$("topCard").textContent=label(top.value);
+  $("colorDot").style.background=COLORS[state.activeColor]||"#fff";
+  $("colorText").textContent=(state.activeColor||"").toUpperCase();
+  const current=state.players[state.turn];
+  $("turnLabel").textContent=state.status==="finished"?"🏆 "+state.winner+" WINS":state.myTurn?"● YOUR TURN":"WAITING FOR "+(current?.name||"PLAYER").toUpperCase();
+  $("gameMessage").textContent=state.message||"";
+  $("handCount").textContent=state.hand.length+" cards";
+  $("drawBtn").disabled=!state.myTurn;
+  $("hand").replaceChildren();
+  state.hand.forEach((card,index)=>{
+    const b=document.createElement("button");
+    b.className="card "+card.color+(state.myTurn?" playable":" disabled");
+    b.textContent=label(card.value);b.setAttribute("aria-label",card.color+" "+card.value);
+    b.onclick=()=>{if(!state.myTurn)return notify("မင်းအလှည့် မဟုတ်သေးပါ။");if(card.color==="wild"){pendingCard=index;$("colorModal").classList.add("show")}else socket.emit("card:play",{index})};
+    $("hand").append(b);
+  });
+  if(state.status==="finished")notify("🏆 "+state.winner+" အနိုင်ရပါပြီ!");
+}
+function myUserId(){return tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id):null}
+function label(v){return ({skip:"⊘",reverse:"⇄",draw2:"+2",draw4:"+4",wild:"★"})[v]||v}
+$("createBtn").onclick=()=>socket.emit("room:create");
+$("joinBtn").onclick=()=>socket.emit("room:join",$("codeInput").value);
+$("startBtn").onclick=()=>socket.emit("game:start");
+$("drawBtn").onclick=()=>socket.emit("card:draw");
+$("leaveBtn").onclick=()=>{socket.emit("room:leave");localStorage.removeItem("unoRoom");state=null;setVisible("roomPanel",false);setVisible("gamePanel",false);setVisible("lobby",true)};
+$("copyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("roomCode").textContent);notify("Room Code ကူးပြီးပါပြီ။")}catch{notify("Room Code: "+$("roomCode").textContent)}};
+$("shareBtn").onclick=()=>{if(!state)return notify("အရင် Room ဖန်တီးပါ။");const url=location.href.split("?")[0]+"?room="+state.code;if(tg?.openTelegramLink)tg.openTelegramLink("https://t.me/share/url?url="+encodeURIComponent(url)+"&text="+encodeURIComponent("Join my UNO room: "+state.code));else if(navigator.share)navigator.share({title:"UNO Arena",text:"Room Code: "+state.code,url}).catch(()=>{});else notify("Room Code: "+state.code)};
+$("chatBtn").onclick=()=>setVisible("chatPanel",$("chatPanel").classList.contains("hidden"));
+$("sendChat").onclick=sendChat;$("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat()});
+function sendChat(){const v=$("chatInput").value.trim();if(v){socket.emit("chat:send",v);$("chatInput").value=""}}
+document.querySelectorAll("[data-color]").forEach(b=>b.onclick=()=>{if(pendingCard!==null)socket.emit("card:play",{index:pendingCard,chosenColor:b.dataset.color});pendingCard=null;$("colorModal").classList.remove("show")});
+const queryRoom=new URLSearchParams(location.search).get("room");if(queryRoom)$("codeInput").value=queryRoom;
+if(!tg?.initData && location.hostname!=="localhost")$("devHelp").textContent="ဒီ App ကို Telegram ထဲက Bot မှတစ်ဆင့် ဖွင့်ပါ။";
+connect();
+</script>
+</body>
+</html>
 
-    <div class="container">
-        <!-- LOBBY SCREEN -->
-        <div id="lobby-screen">
-            <div class="lobby-card">
-                <h1 class="lobby-title">UNO</h1>
-                <div class="lobby-subtitle">Lobby Access</div>
-                
-                <div class="input-group">
-                    <span class="input-label">PLAYER NAME</span>
-                    <input type="text" id="playerName" class="styled-input" value="Mist.Hermit">
-                </div>
-
-                <div class="input-group">
-                    <span class="input-label">CHOOSE BOT OPPONENTS</span>
-                    <div class="bot-select-row">
-                        <button class="bot-btn-opt" onclick="setBotCount(1)" id="bOpt1">1 Bot</button>
-                        <button class="bot-btn-opt" onclick="setBotCount(2)" id="bOpt2">2 Bots</button>
-                        <button class="bot-btn-opt active" onclick="setBotCount(3)" id="bOpt3">3 Bots</button>
-                    </div>
-                </div>
-
-                <button class="btn-create" onclick="createLobby()">+ Create Lobby</button>
-
-                <div class="divider">OR JOIN FRIEND</div>
-
-                <div class="join-row">
-                    <input type="text" id="roomCodeInput" class="styled-input" placeholder="ROOM CODE" style="text-align: center; letter-spacing: 2px; text-transform: uppercase;">
-                    <button class="btn-join" onclick="joinLobby()">Join →</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- TOP BAR -->
-        <div class="top-bar">
-            <span>🎴 <b id="roomTitleDisplay">Room #UNO-99</b></span>
-            <div style="display: flex; gap: 6px;">
-                <span class="top-badge" id="onlineCount">👁️ 1</span>
-                <span class="top-badge" onclick="shareRoomCode()" style="cursor: pointer; background: #15803d;">🔗 SHARE</span>
-            </div>
-        </div>
-
-        <!-- BOTS OPPONENTS -->
-        <div class="bots-container" id="botsContainer">
-            <div class="bot-profile" id="bot1Box">
-                <div class="bot-avatar">🤖<div class="bot-cards-badge" id="bot1Cards">6</div></div>
-                <div class="bot-name">Bot Alpha</div>
-            </div>
-            <div class="bot-profile" id="bot2Box">
-                <div class="bot-avatar">🤖<div class="bot-cards-badge" id="bot2Cards">5</div></div>
-                <div class="bot-name">Bot Beta</div>
-            </div>
-            <div class="bot-profile" id="bot3Box">
-                <div class="bot-avatar" style="border-color: #eab308;">🤖<div class="bot-cards-badge" id="bot3Cards">4</div></div>
-                <div class="bot-name" style="color: #eab308;">Bot Gamma</div>
-            </div>
-        </div>
-
-        <!-- CENTER BOARD -->
-        <div class="center-board">
-            <div class="color-indicator">
-                <span>COLOR</span> <div class="color-dot" id="centerColorDot" style="background: #ef4444;"></div>
-            </div>
-
-            <div class="cards-pile">
-                <div class="uno-card card-back" onclick="drawCard()">
-                    <span style="font-size: 16px;">📦</span>
-                    <span style="font-size: 9px; margin-top: 2px;">DRAW</span>
-                </div>
-                <div id="centerCard" class="uno-card card-red" onclick="playCenterCard()">7</div>
-            </div>
-
-            <div class="action-buttons-right">
-                <button class="btn-action-small" onclick="callSafe()">SAFE</button>
-                <button class="btn-action-small btn-chat" onclick="toggleChat(true)">💬 CHAT</button>
-            </div>
-        </div>
-
-        <!-- PLAYER FOOTER -->
-        <div class="player-footer">
-            <div class="player-info-row">
-                <span style="color: #4ade80; font-weight: 700;" id="myDisplayName">⭐ You (Mist.Hermit)</span>
-                <span style="color: #facc15; font-size: 10px;" id="gameStatusText">YOUR TURN!</span>
-            </div>
-            <div class="player-hand" id="playerHand">
-                <!-- Cards injected -->
-            </div>
-        </div>
-    </div>
-
-    <!-- ROOM CHAT MODAL POPUP -->
-    <div id="chat-modal">
-        <div class="chat-card">
-            <div class="chat-header">
-                <div>
-                    <div style="font-weight: 700; font-size: 14px;">ROOM CHAT</div>
-                    <div style="font-size: 9px; color: #94a3b8;">LIVE DISCUSSION</div>
-                </div>
-                <button onclick="toggleChat(false)" style="background:none; border:none; color:#fff; font-size:16px; cursor:pointer;">✕</button>
-            </div>
-            <div class="chat-messages" id="chatMessagesBox">
-                💬 System: Room connected successfully. Let's play UNO!
-            </div>
-            <div class="chat-input-row">
-                <input type="text" id="chatInputText" class="styled-input" placeholder="Say something..." style="padding: 8px 10px; font-size: 12px;">
-                <button class="btn-join" onclick="sendChatMessage()" style="padding: 8px 12px;">➤</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let selectedBotCount = 3;
-        let currentRoomCode = "SHINIGAMI";
-        let handCards = [
-            {color: 'red', value: '3'},
-            {color: 'blue', value: '5'},
-            {color: 'green', value: 'Skip'},
-            {color: 'yellow', value: '9'},
-            {color: 'red', value: '+2'}
-        ];
-        let centerCard = {color: 'red', value: '7'};
-        let botCardCounts = [6, 5, 4];
-
-        window.onload = function() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                const tg = window.Telegram.WebApp;
-                tg.expand();
-                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                    document.getElementById('playerName').value = tg.initDataUnsafe.user.first_name;
-                }
-            }
-            
-            // Check if URL has room code
-            const urlParams = new URLSearchParams(window.location.search);
-            const room = urlParams.get('room');
-            if(room) {
-                document.getElementById('roomCodeInput').value = room;
-            }
-        };
-
-        function setBotCount(count) {
-            selectedBotCount = count;
-            document.querySelectorAll('.bot-btn-opt').forEach((btn, idx) => {
-                if((idx + 1) === count) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-        }
-
-        function createLobby() {
-            const name = document.getElementById('playerName').value.trim();
-            if (!name) {
-                alert("ကျေးဇူးပြု၍ နာမည်ထည့်ပါ။");
-                return;
-            }
-            currentRoomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-            initGameSession(name, currentRoomCode);
-        }
-
-        function joinLobby() {
-            const name = document.getElementById('playerName').value.trim();
-            const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-            if (!name) {
-                alert("ကျေးဇူးပြု၍ နာမည်ထည့်ပါ။");
-                return;
-            }
-            if (!code) {
-                alert("ကျေးဇူးပြု၍ Room Code ထည့်ပါ။");
-                return;
-            }
-            currentRoomCode = code;
-            initGameSession(name, currentRoomCode);
-        }
-
-        function initGameSession(name, code) {
-            document.getElementById('myDisplayName').innerText = `⭐ You (${name})`;
-            document.getElementById('roomTitleDisplay').innerText = `Room #${code}`;
-            document.getElementById('lobby-screen').style.display = 'none';
-
-            // Adjust UI based on selected bot count
-            document.getElementById('bot1Box').style.display = selectedBotCount >= 1 ? 'block' : 'none';
-            document.getElementById('bot2Box').style.display = selectedBotCount >= 2 ? '
