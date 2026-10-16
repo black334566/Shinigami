@@ -3,31 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Lobby UI</title>
+    <title>Shinigami Uno Game</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
             background-color: #0b0f19;
             color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
+            overflow: hidden;
         }
-        .lobby-card {
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        /* Lobby Screen */
+        #lobby-screen {
             background: #131b2e;
             padding: 30px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            width: 340px;
-            text-align: center;
             border: 1px solid #1e293b;
         }
         h2 {
             margin-bottom: 5px;
-            letter-spacing: 1px;
             color: #38bdf8;
+            letter-spacing: 1px;
         }
         .subtitle {
             font-size: 12px;
@@ -41,7 +50,6 @@
             color: #94a3b8;
             margin-bottom: 5px;
             font-weight: bold;
-            letter-spacing: 1px;
         }
         input {
             width: 100%;
@@ -54,10 +62,6 @@
             box-sizing: border-box;
             font-size: 14px;
             outline: none;
-            transition: border-color 0.3s;
-        }
-        input:focus {
-            border-color: #38bdf8;
         }
         button {
             width: 100%;
@@ -69,111 +73,198 @@
             font-size: 14px;
             transition: opacity 0.2s;
         }
-        button:hover {
-            opacity: 0.9;
-        }
-        .btn-create {
-            background: #10b981;
-            color: white;
-        }
-        .divider {
-            margin: 20px 0;
-            position: relative;
-            text-align: center;
-        }
-        .divider::before {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #334155;
-        }
-        .divider span {
-            position: relative;
-            background: #131b2e;
-            padding: 0 10px;
-            font-size: 11px;
-            color: #64748b;
-            letter-spacing: 1px;
-        }
-        .join-group {
-            display: flex;
-            gap: 10px;
-        }
-        .btn-join {
-            background: #6366f1;
-            color: white;
-            width: 40%;
-        }
-        .code-input {
-            width: 60%;
-            margin-bottom: 0 !important;
-            text-align: center;
-            letter-spacing: 2px;
-            font-weight: bold;
-        }
-        #message-box {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 13px;
+        button:hover { opacity: 0.9; }
+        .btn-create { background: #10b981; color: white; margin-bottom: 15px; }
+        .btn-join { background: #6366f1; color: white; }
+
+        /* Game Screen */
+        #game-screen {
             display: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            background: #131b2e;
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid #1e293b;
+            font-size: 13px;
+        }
+        .game-board {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: auto 0;
+        }
+        .uno-card {
+            width: 70px;
+            height: 100px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+        .uno-card:hover { transform: translateY(-5px); }
+        .card-red { background: #ef4444; color: white; border: 2px solid #f87171; }
+        .card-blue { background: #3b82f6; color: white; border: 2px solid #60a5fa; }
+        .card-green { background: #10b981; color: white; border: 2px solid #34d399; }
+        .card-yellow { background: #f59e0b; color: white; border: 2px solid #fbbf24; }
+        .card-back { background: #1e293b; color: #94a3b8; border: 2px dashed #475569; }
+
+        .player-hand {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 10px;
+            background: #131b2e;
+            border-radius: 12px;
+            border: 1px solid #1e293b;
+            justify-content: center;
+        }
+        .status-text {
+            font-size: 13px;
+            color: #38bdf8;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div class="lobby-card">
-        <h2>SHINIGAMI</h2>
-        <div class="subtitle">LOBBY ACCESS</div>
+    <!-- 1. LOBBY SCREEN -->
+    <div id="lobby-container" class="container">
+        <div id="lobby-screen">
+            <h2>SHINIGAMI</h2>
+            <div class="subtitle">UNO LOBBY</div>
 
-        <div class="label">PLAYER NAME</div>
-        <input type="text" id="playerName" value="Mist.Hermit" placeholder="Enter name...">
+            <div class="label">PLAYER NAME</div>
+            <input type="text" id="playerName" placeholder="Enter name...">
 
-        <button class="btn-create" onclick="createLobby()">+ Create Lobby</button>
+            <button class="btn-create" onclick="startGame()">🎮 Start Uno Game</button>
+        </div>
+    </div>
 
-        <div class="divider"><span>OR</span></div>
-
-        <div class="join-group">
-            <input type="text" id="roomCode" class="code-input" placeholder="CODE">
-            <button class="btn-join" onclick="joinLobby()">Join →</button>
+    <!-- 2. GAME SCREEN -->
+    <div id="game-screen" class="container" style="display: none;">
+        <div class="game-header">
+            <span id="room-info">Room: #UNO-99</span>
+            <span id="player-score">Cards: 5</span>
         </div>
 
-        <div id="message-box"></div>
+        <div>
+            <div class="status-text" id="game-status">သင်၏အလှည့် (Your Turn)</div>
+            <div class="game-board">
+                <div class="uno-card card-back" onclick="drawCard()">📦<br><span style="font-size:10px">Draw</span></div>
+                <div id="center-card" class="uno-card card-red">7</div>
+            </div>
+        </div>
+
+        <div>
+            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 5px; text-align: left;">YOUR HAND CARDS</div>
+            <div class="player-hand" id="playerHand">
+                <!-- Cards will be injected here -->
+            </div>
+        </div>
     </div>
 
     <script>
-        function showMessage(text, isError = false) {
-            const box = document.getElementById('message-box');
-            box.style.display = 'block';
-            box.style.background = isError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)';
-            box.style.color = isError ? '#ef4444' : '#10b981';
-            box.style.border = `1px solid ${isError ? '#ef4444' : '#10b981'}`;
-            box.innerText = text;
-        }
+        // Telegram WebApp init
+        window.onload = function() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                tg.expand();
+                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                    document.getElementById('playerName').value = tg.initDataUnsafe.user.first_name;
+                }
+            }
+        };
 
-        function createLobby() {
+        let handCards = [
+            {color: 'red', value: '3'},
+            {color: 'blue', value: '5'},
+            {color: 'green', value: 'Skip'},
+            {color: 'yellow', value: '9'},
+            {color: 'red', value: '+2'}
+        ];
+
+        let centerCard = {color: 'red', value: '7'};
+
+        function startGame() {
             const name = document.getElementById('playerName').value.trim();
             if (!name) {
-                showMessage("⚠️ ကျေးဇူးပြု၍ ကစားသမားနာမည် ထည့်ပါ။", true);
+                alert("ကျေးဇူးပြု၍ နာမည်ထည့်ပါ။");
                 return;
             }
-            // ဤနေရာတွင် Lobby အသစ်ဖန်တီးသည့် Logic ရေးသားနိုင်ပါသည်
-            showMessage(`🚀 ${name} ဖန်တီးထားသော Lobby သို့ ကြိုဆိုပါတယ်!`);
+            // Switch screens
+            document.getElementById('lobby-container').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+            renderHand();
+            updateCenterCard();
         }
 
-        function joinLobby() {
-            const code = document.getElementById('roomCode').value.trim();
-            if (!code) {
-                showMessage("⚠️ ကျေးဇူးပြု၍ Room Code ထည့်ပါ။", true);
-                return;
+        function renderHand() {
+            const handEl = document.getElementById('playerHand');
+            handEl.innerHTML = '';
+            handCards.forEach((card, index) => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = `uno-card card-${card.color}`;
+                cardDiv.innerText = card.value;
+                cardDiv.onclick = () => playCard(index);
+                handEl.appendChild(cardDiv);
+            });
+            document.getElementById('player-score').innerText = `Cards: ${handCards.length}`;
+        }
+
+        function updateCenterCard() {
+            const centerEl = document.getElementById('center-card');
+            centerEl.className = `uno-card card-${centerCard.color}`;
+            centerEl.innerText = centerCard.value;
+        }
+
+        function playCard(index) {
+            const card = handCards[index];
+            // Simple validation: match color or value
+            if (card.color === centerCard.color || card.value === centerCard.value || card.value === 'Wild') {
+                centerCard = card;
+                handCards.splice(index, 1);
+                updateCenterCard();
+                renderHand();
+                
+                if (handCards.length === 0) {
+                    document.getElementById('game-status').innerText = "🎉 ဂိမ်းနိုင်သွားပါပြီ! (You Won!)";
+                } else {
+                    document.getElementById('game-status').innerText = "✅ ကတ်ချလိုက်ပါပြီ။ Bot အလှည့်...";
+                    setTimeout(() => {
+                        document.getElementById('game-status').innerText = "သင်၏အလှည့် (Your Turn)";
+                    }, 1000);
+                }
+            } else {
+                alert("⚠️ အရောင် သို့မဟုတ် နံပါတ် တူညီသောကတ်ကိုသာ ချရပါမည်။");
             }
-            // ဤနေရာတွင် Code ဖြင့် Room ဝင်ရောက်မည့် Logic ရေးသားနိုင်ပါသည်
-            showMessage(`🔍 Room (${code}) ကို ရှာဖွေနေပါပြီ...`);
+        }
+
+        function drawCard() {
+            const colors = ['red', 'blue', 'green', 'yellow'];
+            const values = ['1', '2', '3', '4', '6', '8'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            const randomVal = values[Math.floor(Math.random() * values.length)];
+            
+            handCards.push({color: randomColor, value: randomVal});
+            renderHand();
+            document.getElementById('game-status').innerText = "📦 ကတ်အသစ် တစ်ကတ် နှိုက်လိုက်ပါပြီ။";
         }
     </script>
-
 </body>
 </html>
