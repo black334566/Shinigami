@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Lobby UI</title>
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .lobby-card {
+            background: #131b2e;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            width: 340px;
+            text-align: center;
+            border: 1px solid #1e293b;
+        }
+        h2 {
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            color: #38bdf8;
+        }
+        .subtitle {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 25px;
+            letter-spacing: 2px;
+        }
+        .label {
+            text-align: left;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 5px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: #0b0f19;
+            border: 1px solid #334155;
+            color: #fff;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: #38bdf8;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .btn-create {
+            background: #10b981;
+            color: white;
+        }
+        .divider {
+            margin: 20px 0;
+            position: relative;
+            text-align: center;
+        }
+        .divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #334155;
+        }
+        .divider span {
+            position: relative;
+            background: #131b2e;
+            padding: 0 10px;
+            font-size: 11px;
+            color: #64748b;
+            letter-spacing: 1px;
+        }
+        .join-group {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-join {
+            background: #6366f1;
+            color: white;
+            width: 40%;
+        }
+        .code-input {
+            width: 60%;
+            margin-bottom: 0 !important;
+            text-align: center;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+        #message-box {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lobby-card">
+        <h2>SHINIGAMI</h2>
+        <div class="subtitle">LOBBY ACCESS</div>
+
+        <div class="label">PLAYER NAME</div>
+        <input type="text" id="playerName" value="Mist.Hermit" placeholder="Enter name...">
+
+        <button class="btn-create" onclick="createLobby()">+ Create Lobby</button>
+
+        <div class="divider"><span>OR</span></div>
+
+        <div class="join-group">
+            <input type="text" id="roomCode" class="code-input" placeholder="CODE">
+            <button class="btn-join" onclick="joinLobby()">Join →</button>
+        </div>
+
+        <div id="message-box"></div>
+    </div>
+
+    <script>
+        function showMessage(text, isError = false) {
+            const box = document.getElementById('message-box');
+            box.style.display = 'block';
+            box.style.background = isError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)';
+            box.style.color = isError ? '#ef4444' : '#10b981';
+            box.style.border = `1px solid ${isError ? '#ef4444' : '#10b981'}`;
+            box.innerText = text;
+        }
+
+        function createLobby() {
+            const name = document.getElementById('playerName').value.trim();
+            if (!name) {
+                showMessage("⚠️ ကျေးဇူးပြု၍ ကစားသမားနာမည် ထည့်ပါ။", true);
+                return;
+            }
+            // ဤနေရာတွင် Lobby အသစ်ဖန်တီးသည့် Logic ရေးသားနိုင်ပါသည်
+            showMessage(`🚀 ${name} ဖန်တီးထားသော Lobby သို့ ကြိုဆိုပါတယ်!`);
+        }
+
+        function joinLobby() {
+            const code = document.getElementById('roomCode').value.trim();
+            if (!code) {
+                showMessage("⚠️ ကျေးဇူးပြု၍ Room Code ထည့်ပါ။", true);
+                return;
+            }
+            // ဤနေရာတွင် Code ဖြင့် Room ဝင်ရောက်မည့် Logic ရေးသားနိုင်ပါသည်
+            showMessage(`🔍 Room (${code}) ကို ရှာဖွေနေပါပြီ...`);
+        }
+    </script>
+
+</body>
+</html>
