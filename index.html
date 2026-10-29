@@ -1,145 +1,136 @@
-<!doctype html>
-<html lang="my">
+<!-- file: index.html -->
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#061710">
-<title>UNO Arena Online</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="/socket.io/socket.io.js"></script>
-<style>
-:root{--g:#16e0a0;--bg:#061710;--panel:#0b2118;--gold:#ffcf69}
-*{box-sizing:border-box}body{margin:0;min-height:100dvh;color:#fff;font-family:system-ui,sans-serif;background:radial-gradient(ellipse at 50% 40%,#176a45,transparent 58%),linear-gradient(145deg,#061b14,#092e20 55%,#03110c)}
-button,input{font:inherit}button{cursor:pointer;color:white}.app{max-width:500px;margin:auto;min-height:100dvh;padding:12px;display:flex;flex-direction:column;gap:13px}
-.top,.panel{border:1px solid #ffffff1b;border-radius:18px;background:linear-gradient(135deg,#ffffff12,#ffffff05);backdrop-filter:blur(12px);padding:13px}
-.top{display:flex;justify-content:space-between;align-items:center}.brand{font-weight:950;letter-spacing:2px;font-size:20px}.brand span{color:var(--g)}.muted{font-size:11px;color:#a9c9b8}.pill{padding:7px 10px;border:1px solid #ffffff20;border-radius:11px;background:#ffffff0a;font-size:11px}
-.section{text-align:center;font-size:10px;letter-spacing:3px;font-weight:900;color:#a9cbbb}
-.players{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.player{padding:9px 3px;text-align:center;border:1px solid #ffffff16;border-radius:15px;background:#ffffff08;min-width:0}.player.me{border-color:var(--gold);box-shadow:0 0 15px #ffcf6920}.avatar{font-size:22px;margin-bottom:5px}.pname{font-size:10px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pcount{font-size:9px;color:#a9c9b8;margin-top:4px}.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--g);margin-right:4px}
-.table{border-radius:44% / 32%;border:2px solid #b8f5c42b;min-height:230px;padding:18px 10px;background:radial-gradient(ellipse,#218653,#11613d 55%,#0a3926);box-shadow:inset 0 0 35px #001d12a8,0 12px 35px #0004;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.turn{font-size:10px;font-weight:850;letter-spacing:1px;margin-bottom:17px;background:#05291ddd;border:1px solid #ffffff1b;border-radius:30px;padding:7px 12px}.piles{display:flex;gap:25px;align-items:center}.card{width:65px;height:94px;border:3px solid #fff9;border-radius:11px;display:grid;place-items:center;position:relative;font-size:27px;font-weight:950;text-shadow:0 2px 4px #0006;box-shadow:0 9px 15px #0005,inset 0 0 0 2px #ffffff22;flex-shrink:0}.card:before{content:"";position:absolute;inset:7px 10px;border:2px solid #ffffffb8;border-radius:50%;transform:rotate(-28deg)}.red{background:linear-gradient(145deg,#ff6767,#d20e36 70%,#870d25)}.blue{background:linear-gradient(145deg,#60baff,#1556df 70%,#102c86)}.green{background:linear-gradient(145deg,#5ff5a7,#07945b 70%,#075335)}.yellow{background:linear-gradient(145deg,#ffe988,#f7b90c 70%,#b87500)}.wild{background:conic-gradient(#e93651 0 25%,#eebd2c 25% 50%,#15b977 50% 75%,#347af4 75%)}.back{background:repeating-linear-gradient(45deg,#122f29,#122f29 7px,#1c5540 7px,#1c5540 14px);border-color:#e8d7a4}.activecolor{display:flex;align-items:center;gap:7px;margin-top:16px;font-size:10px;color:#c1e8d4}.color-dot{width:10px;height:10px;border-radius:50%}.actions{display:flex;gap:8px;margin-top:16px}.btn{border:1px solid #ffffff20;border-radius:12px;padding:10px 12px;background:#062b1e;font-size:11px;font-weight:850}.primary{background:linear-gradient(135deg,#20e7a5,#079969);border-color:#7bffcc;color:#032b1b}.btn:disabled{opacity:.4;cursor:not-allowed}.hand{display:flex;gap:7px;overflow-x:auto;align-items:flex-end;padding:15px 2px 8px;min-height:110px}.hand .card{width:54px;height:81px;font-size:22px;cursor:pointer}.hand .card:before{inset:6px 8px}.hand .card.playable{transform:translateY(-9px);border-color:#fff}.hand .card.disabled{filter:brightness(.55);cursor:not-allowed}.input{width:100%;padding:12px;border:1px solid #ffffff20;border-radius:11px;background:#06150f;color:#fff;margin:5px 0 10px;outline:none}.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}.hidden{display:none!important}.notice{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#0a2118;border:1px solid #3c8966;padding:12px 16px;border-radius:13px;font-size:12px;z-index:50;max-width:90%;text-align:center}.chatlog{height:130px;overflow:auto;background:#04130d;border-radius:10px;padding:8px;font-size:11px;line-height:1.7;margin-bottom:8px;overflow-wrap:anywhere}.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:20px;z-index:40}.modal.show{display:flex}.box{width:100%;max-width:350px;border-radius:20px;padding:18px;background:#0b2118;border:1px solid #ffffff25}.box h2{margin:0 0 14px}.colors{display:flex;justify-content:center;gap:12px;margin-top:18px}.color-choice{width:48px;height:48px;border:2px solid #ffffffaa;border-radius:50%}
-@media(max-height:700px){.table{min-height:190px}.app{gap:9px}.hand{min-height:95px}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UNO Web App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a2e;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #header {
+            text-align: center;
+            padding: 10px;
+            background: #16213e;
+            font-weight: bold;
+        }
+        #game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+        }
+        .center-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 50px;
+        }
+        .deck, .discard {
+            width: 80px;
+            height: 120px;
+            border-radius: 10px;
+            background-size: cover;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+        .deck { background-color: #2a2a2a; border: 2px dashed #555; }
+        .hand {
+            display: flex;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            gap: 5px;
+        }
+        .card {
+            width: 70px;
+            height: 105px;
+            flex-shrink: 0;
+            border-radius: 8px;
+            background-size: cover;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .card:active { transform: translateY(-10px); }
+        #player-info {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-<div class="app">
-<header class="top"><div><div class="brand">UNO <span>ARENA</span></div><div class="muted" id="roomLabel">REAL-TIME MULTIPLAYER</div></div><div class="row" style="align-items:center"><button class="pill" id="shareBtn">↗ SHARE</button><button class="pill" id="chatBtn">CHAT</button></div></header>
-<section id="lobby" class="panel">
-  <div class="section">CREATE OR JOIN ROOM</div>
-  <p class="muted">ကစားသမား ၄ ယောက်ပြည့်မှ Host က ဂိမ်းစနိုင်ပါတယ်။</p>
-  <button class="btn primary" style="width:100%;padding:13px" id="createBtn">＋ CREATE ROOM</button>
-  <div class="muted" style="text-align:center;margin:14px">— OR JOIN WITH CODE —</div>
-  <input id="codeInput" class="input" maxlength="6" placeholder="ROOM CODE (ဥပမာ A7K9Q2)">
-  <button class="btn" style="width:100%" id="joinBtn">JOIN ROOM →</button>
-  <div id="devHelp" class="muted" style="margin-top:12px"></div>
-</section>
-<section id="roomPanel" class="panel hidden">
-  <div class="row" style="align-items:center"><div style="flex:2"><div class="muted">ROOM CODE</div><div id="roomCode" style="font-size:25px;font-weight:950;letter-spacing:3px">------</div></div><button class="btn" id="copyBtn">COPY CODE</button></div>
-  <div class="players" id="players" style="margin-top:14px"></div>
-  <div class="row" style="margin-top:12px"><button class="btn primary" id="startBtn">START GAME</button><button class="btn" id="leaveBtn">LEAVE ROOM</button></div>
-  <div id="roomMessage" class="muted" style="margin-top:10px">ကစားသမား ၄ ယောက်ကို စောင့်နေပါတယ်။</div>
-</section>
-<section id="gamePanel" class="panel hidden">
-  <div class="table">
-    <div class="turn" id="turnLabel">CONNECTING…</div>
-    <div class="piles"><div class="card back">UNO</div><div id="topCard" class="card red">7</div></div>
-    <div class="activecolor">ACTIVE COLOR <span id="colorDot" class="color-dot" style="background:#ff4545"></span><span id="colorText">RED</span></div>
-    <div class="actions"><button class="btn primary" id="drawBtn">＋ DRAW CARD</button></div>
-  </div>
-  <div class="row" style="align-items:center;margin-top:12px"><div style="font-weight:850">YOUR HAND</div><div id="handCount" class="muted" style="text-align:right">0 cards</div></div>
-  <div id="hand" class="hand"></div>
-  <div id="gameMessage" class="muted"></div>
-</section>
-<section id="chatPanel" class="panel hidden">
-  <div class="section">ROOM CHAT</div><div id="chatlog" class="chatlog"></div>
-  <div class="row"><input id="chatInput" class="input" maxlength="180" placeholder="Message..." style="margin:0"><button class="btn primary" id="sendChat">SEND</button></div>
-</section>
-</div>
-<div class="modal" id="colorModal"><div class="box"><h2>Choose a color</h2><div class="muted">Wild ကတ်အတွက် အရောင်ရွေးပါ။</div><div class="colors"><button class="color-choice red" data-color="red"></button><button class="color-choice blue" data-color="blue"></button><button class="color-choice green" data-color="green"></button><button class="color-choice yellow" data-color="yellow"></button></div></div></div>
-<div id="notice" class="notice hidden"></div>
-<script>
-const tg = window.Telegram?.WebApp;
-tg?.ready(); tg?.expand();
-const $ = id => document.getElementById(id);
-let socket, state=null, pendingCard=null, noticeTimer;
-const COLORS={red:"#ff4545",blue:"#347af4",green:"#15b977",yellow:"#eebd2c"};
-function notify(msg){$("notice").textContent=msg;$("notice").classList.remove("hidden");clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$("notice").classList.add("hidden"),2800)}
-function setVisible(id,on){$(id).classList.toggle("hidden",!on)}
-function connect(){
-  const initData=tg?.initData || "";
-  let auth={initData};
-  // Local development only: run server with DEV_ALLOW_NO_TG=true and use a unique name.
-  if(!initData && location.hostname==="localhost"){
-    let devName=prompt("Local test player name?","Player")||"Player";
-    auth.devName=devName; auth.devId=devName.toLowerCase().replace(/[^a-z0-9_-]/g,"").slice(0,30)+"_"+Math.random().toString(36).slice(2,7);
-  }
-  socket=io({auth,reconnection:true,reconnectionAttempts:Infinity,reconnectionDelay:1000,reconnectionDelayMax:10000});
-  socket.on("connect",()=>{
-    notify("Server ချိတ်ဆက်ပြီးပါပြီ။");
-    const saved=localStorage.getItem("unoRoom");
-    if(saved) socket.emit("room:join",saved);
-  });
-  socket.on("connect_error",e=>notify(e.message||"Connection error"));
-  socket.on("room:joined",({code})=>{localStorage.setItem("unoRoom",code);$("roomCode").textContent=code;setVisible("lobby",false);setVisible("roomPanel",true);$("roomLabel").textContent="ROOM #"+code;});
-  socket.on("game:state",s=>{state=s;render();});
-  socket.on("game:error",notify);
-  socket.on("chat:message",m=>{const d=document.createElement("div");d.textContent=`${m.name}: ${m.text}`;$("chatlog").appendChild(d);$("chatlog").scrollTop=$("chatlog").scrollHeight;});
-  socket.on("disconnect",()=>notify("လိုင်းပြတ်သွားပါပြီ။ ပြန်ချိတ်ဆက်နေပါတယ်…"));
-}
-function render(){
-  if(!state)return;
-  $("roomCode").textContent=state.code;$("roomLabel").textContent="ROOM #"+state.code;
-  setVisible("lobby",false);setVisible("roomPanel",true);
-  $("roomMessage").textContent=state.message||"";
-  $("players").replaceChildren();
-  const icons=["🤖","🦊","👾","🐼"];
-  state.players.forEach((p,i)=>{
-    const el=document.createElement("div");el.className="player"+(p.isMe?" me":"");
-    const av=document.createElement("div");av.className="avatar";av.textContent=icons[i%icons.length];
-    const name=document.createElement("div");name.className="pname";name.textContent=(p.connected?"● ":"○ ")+p.name;
-    const count=document.createElement("div");count.className="pcount";count.textContent=p.isMe?`${p.count} cards (you)`:`${p.count} cards`;
-    el.append(av,name,count);$("players").append(el);
-  });
-  $("startBtn").disabled=state.hostId!==myUserId()||state.players.length!==4||state.status!=="waiting";
-  $("startBtn").textContent=state.status==="waiting"?"START GAME":state.status==="finished"?"GAME FINISHED":"GAME IN PROGRESS";
-  const playing=state.status==="playing"||state.status==="finished";
-  setVisible("gamePanel",playing);
-  if(!playing)return;
-  const top=state.topCard||{color:"red",value:"?"};
-  $("topCard").className="card "+top.color;$("topCard").textContent=label(top.value);
-  $("colorDot").style.background=COLORS[state.activeColor]||"#fff";
-  $("colorText").textContent=(state.activeColor||"").toUpperCase();
-  const current=state.players[state.turn];
-  $("turnLabel").textContent=state.status==="finished"?"🏆 "+state.winner+" WINS":state.myTurn?"● YOUR TURN":"WAITING FOR "+(current?.name||"PLAYER").toUpperCase();
-  $("gameMessage").textContent=state.message||"";
-  $("handCount").textContent=state.hand.length+" cards";
-  $("drawBtn").disabled=!state.myTurn;
-  $("hand").replaceChildren();
-  state.hand.forEach((card,index)=>{
-    const b=document.createElement("button");
-    b.className="card "+card.color+(state.myTurn?" playable":" disabled");
-    b.textContent=label(card.value);b.setAttribute("aria-label",card.color+" "+card.value);
-    b.onclick=()=>{if(!state.myTurn)return notify("မင်းအလှည့် မဟုတ်သေးပါ။");if(card.color==="wild"){pendingCard=index;$("colorModal").classList.add("show")}else socket.emit("card:play",{index})};
-    $("hand").append(b);
-  });
-  if(state.status==="finished")notify("🏆 "+state.winner+" အနိုင်ရပါပြီ!");
-}
-function myUserId(){return tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id):null}
-function label(v){return ({skip:"⊘",reverse:"⇄",draw2:"+2",draw4:"+4",wild:"★"})[v]||v}
-$("createBtn").onclick=()=>socket.emit("room:create");
-$("joinBtn").onclick=()=>socket.emit("room:join",$("codeInput").value);
-$("startBtn").onclick=()=>socket.emit("game:start");
-$("drawBtn").onclick=()=>socket.emit("card:draw");
-$("leaveBtn").onclick=()=>{socket.emit("room:leave");localStorage.removeItem("unoRoom");state=null;setVisible("roomPanel",false);setVisible("gamePanel",false);setVisible("lobby",true)};
-$("copyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("roomCode").textContent);notify("Room Code ကူးပြီးပါပြီ။")}catch{notify("Room Code: "+$("roomCode").textContent)}};
-$("shareBtn").onclick=()=>{if(!state)return notify("အရင် Room ဖန်တီးပါ။");const url=location.href.split("?")[0]+"?room="+state.code;if(tg?.openTelegramLink)tg.openTelegramLink("https://t.me/share/url?url="+encodeURIComponent(url)+"&text="+encodeURIComponent("Join my UNO room: "+state.code));else if(navigator.share)navigator.share({title:"UNO Arena",text:"Room Code: "+state.code,url}).catch(()=>{});else notify("Room Code: "+state.code)};
-$("chatBtn").onclick=()=>setVisible("chatPanel",$("chatPanel").classList.contains("hidden"));
-$("sendChat").onclick=sendChat;$("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat()});
-function sendChat(){const v=$("chatInput").value.trim();if(v){socket.emit("chat:send",v);$("chatInput").value=""}}
-document.querySelectorAll("[data-color]").forEach(b=>b.onclick=()=>{if(pendingCard!==null)socket.emit("card:play",{index:pendingCard,chosenColor:b.dataset.color});pendingCard=null;$("colorModal").classList.remove("show")});
-const queryRoom=new URLSearchParams(location.search).get("room");if(queryRoom)$("codeInput").value=queryRoom;
-if(!tg?.initData && location.hostname!=="localhost")$("devHelp").textContent="ဒီ App ကို Telegram ထဲက Bot မှတစ်ဆင့် ဖွင့်ပါ။";
-connect();
-</script>
+    <div id="header">🎴 UNO Arena</div>
+    
+    <div id="game-area">
+        <div class="center-area">
+            <div class="deck" onclick="drawCard()"></div>
+            <div class="discard" id="discard-pile"></div>
+        </div>
+        
+        <div id="player-info">Waiting for game state...</div>
+        
+        <div class="hand" id="player-hand">
+            <!-- ကတ်တွေ ဒီမှာ ပေါ်လာမယ် -->
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // App ကို အပြည့်ဖွင့်
+
+        // ကတ်ပုံတွေအတွက် Base URL
+        const IMG_BASE = "https://raw.githubusercontent.com/ImaginaryDevelopment/Uno/master/Uno/Images/Cards/";
+
+        // နမူနာ ကတ်တွေ (Backend ကနေ လာတဲ့အခါ ဒါကို အစားထိုးရမယ်)
+        let myHand = [
+            { color: "Blue", type: "7" },
+            { color: "Blue", type: "Draw2" },
+            { color: "Green", type: "8" },
+            { color: "Red", type: "9" }
+        ];
+
+        function getCardImage(card) {
+            if (card.type === "Wild") return IMG_BASE + "Wild.png";
+            if (card.type === "Wild4") return IMG_BASE + "Wild_Draw4.png";
+            return IMG_BASE + card.color + "_" + card.type + ".png";
+        }
+
+        function renderHand() {
+            const handDiv = document.getElementById('player-hand');
+            handDiv.innerHTML = '';
+            myHand.forEach((card, index) => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                cardDiv.style.backgroundImage = `url('${getCardImage(card)}')`;
+                cardDiv.onclick = () => playCard(index);
+                handDiv.appendChild(cardDiv);
+            });
+        }
+
+        function playCard(index) {
+            // Backend ကို ကတ်ဆော့တဲ့အကြောင်း အသိပေးမယ်
+            tg.sendData(JSON.stringify({ action: "play", card_index: index }));
+            tg.close();
+        }
+
+        function drawCard() {
+            tg.sendData(JSON.stringify({ action: "draw" }));
+            tg.close();
+        }
+
+        // စတင်ပြသမယ်
+        renderHand();
+        document.getElementById('discard-pile').style.backgroundImage = `url('${getCardImage({color:"Red", type:"9"})}')`;
+    </script>
 </body>
 </html>
-
