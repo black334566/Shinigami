@@ -1,103 +1,77 @@
-<!-- file: index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>UNO Web App</title>
+    <title>UNO Arena</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #1a1a2e;
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+            margin: 0; padding: 0; background-color: #1a1a2e; color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
-        #header {
-            text-align: center;
-            padding: 10px;
-            background: #16213e;
-            font-weight: bold;
+        #header { text-align: center; padding: 15px; background: #16213e; font-weight: bold; font-size: 18px; }
+        #table {
+            flex: 1; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; position: relative;
         }
-        #game-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 10px;
-        }
-        .center-area {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            margin-top: 50px;
-        }
+        .pile { display: flex; gap: 20px; align-items: center; margin-bottom: 30px; }
         .deck, .discard {
-            width: 80px;
-            height: 120px;
-            border-radius: 10px;
-            background-size: cover;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            width: 80px; height: 120px; border-radius: 8px; background-size: cover;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4); border: 2px solid #fff;
         }
-        .deck { background-color: #2a2a2a; border: 2px dashed #555; }
-        .hand {
-            display: flex;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            gap: 5px;
+        .deck { background-color: #333; border: 2px dashed #666; cursor: pointer; }
+        .discard { border-color: yellow; }
+        
+        #hand-container {
+            background: #0f0f1a; padding: 10px; border-radius: 15px 15px 0 0;
+            width: 100%; box-sizing: border-box;
         }
+        .hand { display: flex; overflow-x: auto; gap: 8px; padding: 10px 5px; scrollbar-width: none; }
+        .hand::-webkit-scrollbar { display: none; }
+        
         .card {
-            width: 70px;
-            height: 105px;
-            flex-shrink: 0;
-            border-radius: 8px;
-            background-size: cover;
-            cursor: pointer;
-            transition: transform 0.2s;
+            width: 70px; height: 105px; flex-shrink: 0; border-radius: 6px;
+            background-size: cover; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3); background-color: #222;
         }
-        .card:active { transform: translateY(-10px); }
-        #player-info {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 14px;
-        }
+        .card:active { transform: translateY(-15px); box-shadow: 0 8px 15px rgba(255,255,255,0.2); }
+        
+        #status { text-align: center; font-size: 16px; margin-top: 10px; color: #e94560; font-weight: bold; }
     </style>
 </head>
 <body>
     <div id="header">🎴 UNO Arena</div>
     
-    <div id="game-area">
-        <div class="center-area">
+    <div id="table">
+        <div id="status">သင့်အလှည့်ကို စောင့်ဆိုင်းနေပါသည်...</div>
+        <div class="pile">
             <div class="deck" onclick="drawCard()"></div>
             <div class="discard" id="discard-pile"></div>
         </div>
-        
-        <div id="player-info">Waiting for game state...</div>
-        
-        <div class="hand" id="player-hand">
-            <!-- ကတ်တွေ ဒီမှာ ပေါ်လာမယ် -->
-        </div>
+    </div>
+    
+    <div id="hand-container">
+        <div class="hand" id="player-hand"></div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // App ကို အပြည့်ဖွင့်
+        tg.expand(); 
+        tg.ready(); // Telegram ကို အသင့်ဖြစ်ကြောင်း အသိပေး
 
-        // ကတ်ပုံတွေအတွက် Base URL
         const IMG_BASE = "https://raw.githubusercontent.com/ImaginaryDevelopment/Uno/master/Uno/Images/Cards/";
 
-        // နမူနာ ကတ်တွေ (Backend ကနေ လာတဲ့အခါ ဒါကို အစားထိုးရမယ်)
+        // နမူနာ ကတ်တွေ (UI စမ်းသပ်ရန်)
         let myHand = [
-            { color: "Blue", type: "7" },
+            { color: "Blue", type: "7" }, 
             { color: "Blue", type: "Draw2" },
-            { color: "Green", type: "8" },
-            { color: "Red", type: "9" }
+            { color: "Green", type: "8" }, 
+            { color: "Red", type: "9" },
+            { color: "Wild", type: "Wild" }
         ];
+        let topCard = { color: "Red", type: "Skip" };
 
         function getCardImage(card) {
             if (card.type === "Wild") return IMG_BASE + "Wild.png";
@@ -105,9 +79,11 @@
             return IMG_BASE + card.color + "_" + card.type + ".png";
         }
 
-        function renderHand() {
+        function render() {
             const handDiv = document.getElementById('player-hand');
             handDiv.innerHTML = '';
+            
+            // ကတ်တွေ ပုံဆွဲမယ်
             myHand.forEach((card, index) => {
                 const cardDiv = document.createElement('div');
                 cardDiv.className = 'card';
@@ -115,12 +91,18 @@
                 cardDiv.onclick = () => playCard(index);
                 handDiv.appendChild(cardDiv);
             });
+            
+            // အပေါ်ဆုံး ကတ်ပုံဆွဲမယ်
+            document.getElementById('discard-pile').style.backgroundImage = `url('${getCardImage(topCard)}')`;
+            
+            // စာသားပြောင်းမယ်
+            document.getElementById('status').innerText = "သင့်အလှည့်ဖြစ်ပါသည်။ ကတ်ရွေးပါ။";
         }
 
         function playCard(index) {
-            // Backend ကို ကတ်ဆော့တဲ့အကြောင်း အသိပေးမယ်
+            // ကတ်နှိပ်လိုက်ရင် Telegram ဆီကို Data ပို့မယ်
             tg.sendData(JSON.stringify({ action: "play", card_index: index }));
-            tg.close();
+            tg.close(); // Web App ပိတ်မယ်
         }
 
         function drawCard() {
@@ -128,9 +110,8 @@
             tg.close();
         }
 
-        // စတင်ပြသမယ်
-        renderHand();
-        document.getElementById('discard-pile').style.backgroundImage = `url('${getCardImage({color:"Red", type:"9"})}')`;
+        // စတင် run မယ်
+        render();
     </script>
 </body>
 </html>
